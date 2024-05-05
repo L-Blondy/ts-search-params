@@ -1,33 +1,42 @@
 {
-  "name": "ts-search-params",
-  "version": "0.0.1",
-  "description": "Type safe search params",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/L-Blondy/ts-search-params.git"
-  },
-  "keywords": [
-    "typescript",
-    "URLSearchParams",
-    "searchParams",
-    "params",
-    "typesafe",
-    "seach",
-    "qs",
-    "querystring",
-    "ts"
-  ],
-  "author": "Laurent Blondy",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/L-Blondy/ts-search-params/issues"
-  },
-  "homepage": "https://github.com/L-Blondy/ts-search-params#readme",
-  "dependencies": {
-    "vitest": "^1.6.0"
-  }
+   "name": "ts-search-params",
+   "version": "0.0.1",
+   "description": "Type safe search params",
+   "main": "index.js",
+   "scripts": {
+      "test": "vitest run && tsc --noEmit",
+      "dev": "vitest"
+   },
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/L-Blondy/ts-search-params.git"
+   },
+   "keywords": [
+      "typescript",
+      "URLSearchParams",
+      "searchParams",
+      "params",
+      "typesafe",
+      "seach",
+      "qs",
+      "querystring",
+      "ts"
+   ],
+   "author": "Laurent Blondy",
+   "license": "MIT",
+   "bugs": {
+      "url": "https://github.com/L-Blondy/ts-search-params/issues"
+   },
+   "homepage": "https://github.com/L-Blondy/ts-search-params#readme",
+   "devDependencies": {
+      "@typescript-eslint/eslint-plugin": "^7.8.0",
+      "@typescript-eslint/parser": "^7.8.0",
+      "eslint": "^8.57.0",
+      "prettier": "^3.2.5",
+      "vitest": "^1.6.0",
+      "@types/node": "^20.12.8",
+      "jsdom": "^24.0.0",
+      "typescript": "^5.4.5"
+   },
+   "dependencies": {}
 }
