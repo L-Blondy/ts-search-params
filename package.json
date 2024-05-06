@@ -1,12 +1,16 @@
 {
    "name": "ts-search-params",
    "version": "0.0.1",
-   "description": "Type safe search params",
+   "description": "Type Safe Search Params",
    "main": "index.js",
    "scripts": {
       "build": "tsup",
       "dev": "vitest",
-      "test": "vitest run && tsc --noEmit"
+      "test": "vitest run && tsc --noEmit",
+      "prepublish": "npm run test && npm run build",
+      "postpublish": "git add . && git commit -a && git tag v$npm_package_version && git push --tags && git push",
+      "pub:beta": "npm publish --tag beta",
+      "pub:stable": "npm publish"
    },
    "repository": {
       "type": "git",
