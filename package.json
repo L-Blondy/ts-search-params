@@ -1,6 +1,6 @@
 {
    "name": "ts-search-params",
-   "version": "0.0.7",
+   "version": "0.0.8",
    "description": "Type Safe Search Params",
    "type": "module",
    "main": "dist/index.cjs",
@@ -29,6 +29,7 @@
       "test": "vitest run && tsc --noEmit",
       "prepublish": "npm run test && npm run build",
       "postpublish": "git add . && git commit -a && git tag v$npm_package_version && git push --tags && git push",
+      "prepack": "npm run build",
       "pub:beta": "npm publish --tag beta",
       "pub:stable": "npm publish"
    },
