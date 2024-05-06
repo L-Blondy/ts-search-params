@@ -4,8 +4,9 @@
    "description": "Type safe search params",
    "main": "index.js",
    "scripts": {
-      "test": "vitest run && tsc --noEmit",
-      "dev": "vitest"
+      "build": "tsup",
+      "dev": "vitest",
+      "test": "vitest run && tsc --noEmit"
    },
    "repository": {
       "type": "git",
@@ -29,14 +30,16 @@
    },
    "homepage": "https://github.com/L-Blondy/ts-search-params#readme",
    "devDependencies": {
+      "@types/node": "^20.12.8",
       "@typescript-eslint/eslint-plugin": "^7.8.0",
       "@typescript-eslint/parser": "^7.8.0",
       "eslint": "^8.57.0",
-      "prettier": "^3.2.5",
-      "vitest": "^1.6.0",
-      "@types/node": "^20.12.8",
       "jsdom": "^24.0.0",
-      "typescript": "^5.4.5"
+      "prettier": "^3.2.5",
+      "typescript": "^5.4.5",
+      "vitest": "^1.6.0"
    },
-   "dependencies": {}
+   "dependencies": {
+      "tsup": "^8.0.2"
+   }
 }
