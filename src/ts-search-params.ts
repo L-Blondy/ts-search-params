@@ -1,4 +1,10 @@
-export class TSSearchParams<T extends Record<string, any>> {
+import {
+   SerializableArray,
+   SerializableObject,
+   SerializablePrimitive,
+} from './types'
+
+export class TSSearchParams<T extends SerializableObject> {
    #value: T
 
    constructor(init?: string | URLSearchParams | undefined) {
@@ -7,7 +13,7 @@ export class TSSearchParams<T extends Record<string, any>> {
       const value = {} as T
       for (let [_k, val] of searchParams.entries()) {
          const key: keyof T = _k
-         value[key] = parseValue(val)
+         value[key] = parseValue(val) as any
       }
       this.#value = value
    }
@@ -19,6 +25,8 @@ export class TSSearchParams<T extends Record<string, any>> {
 
    toString() {
       return Object.entries(this.#value).reduce((qs, [_k, _v]) => {
+         // remove undefined at the top level
+         if (_v === undefined) return qs
          const prefix = qs.length ? '&' : ''
          const key = encodeURIComponent(_k)
          const value = encodeValue(_v)
@@ -37,7 +45,7 @@ export class TSSearchParams<T extends Record<string, any>> {
 
 function parseValue(val: string) {
    if (isSurroundedBy(val, '{', '}') || isSurroundedBy(val, '[', ']')) {
-      return JSON.parse(val)
+      return decodePrimitivesRecursively(JSON.parse(val))
    }
    if (isSurroundedBy(val, '"')) {
       return val.slice(1, -1)
@@ -59,9 +67,12 @@ function parseValue(val: string) {
 
 function encodeValue(val: any) {
    if (isObject(val)) {
-      return encodeURIComponent(JSON.stringify(val))
+      return encodeURIComponent(
+         JSON.stringify(encodePrimitivesRecursively(val)),
+      )
    }
-   if (typeof val === 'string') {
+   // top level empty string values result in `value=` as they go through this case
+   if (val && typeof val === 'string') {
       return encodeURIComponent(`"${val}"`)
    }
    return String(val)
@@ -73,4 +84,55 @@ function isSurroundedBy(str: string, start: string, end: string = start) {
 
 function isObject(val: any) {
    return typeof val === 'object' && val !== null
+}
+
+/**
+ * Mutate the object for better perf
+ */
+function traverse(
+   objOrArr: SerializableObject | SerializableArray,
+   fn: (
+      obj: SerializableObject | SerializableArray,
+      prop: string,
+      value: SerializablePrimitive | SerializableArray | SerializableObject,
+   ) => void,
+) {
+   Object.entries(objOrArr).forEach(([key, val]) => {
+      fn(objOrArr, key, val)
+      if (val !== null && typeof val === 'object') {
+         traverse(val, fn)
+      }
+   })
+   return objOrArr
+}
+
+function encodePrimitivesRecursively(
+   objectOrArray: SerializableObject | SerializableArray,
+) {
+   const copy = structuredClone(objectOrArray)
+   traverse(copy, (obj, key, value) => {
+      if (value !== null && typeof value === 'object') {
+         return
+      }
+      if (typeof value === 'string') {
+         // @ts-expect-error ts fails to assign key, even using any
+         obj[key] = `"${value}"`
+      } else {
+         // @ts-expect-error ts fails to assign key, even using any
+         obj[key] = String(value)
+      }
+   })
+   return copy
+}
+
+function decodePrimitivesRecursively(
+   objectOrArray: SerializableObject | SerializableArray,
+) {
+   traverse(objectOrArray, (obj, key, value) => {
+      if (typeof value === 'string') {
+         // @ts-expect-error ts fails to assign key, even using any
+         obj[key] = parseValue(value)
+      }
+   })
+   return objectOrArray
 }
