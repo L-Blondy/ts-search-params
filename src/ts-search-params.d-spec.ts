@@ -1,4 +1,5 @@
-import { test } from 'vitest'
+/* eslint-disable no-template-curly-in-string */
+import { expectTypeOf, test } from 'vitest'
 import { TSSearchParams } from './ts-search-params'
 
 test('`.assign()` serializable values should be legal', () => {
@@ -37,12 +38,14 @@ test('`.assign()` should allow only <T>', () => {
 })
 
 test('`.assign()` possibile values should be limited by the `validate` function', () => {
-   const tssp = new TSSearchParams('', () => ({
-      a: 1,
-      b: '',
-      c: [1, null],
-      d: [{ a: 1 }],
-   }))
+   const tssp = new TSSearchParams('', {
+      validate: () => ({
+         a: 1,
+         b: '',
+         c: [1, null],
+         d: [{ a: 1 }],
+      }),
+   })
 
    tssp.assign({ a: 1 })
    tssp.assign({ c: [null, 5] })
@@ -51,4 +54,19 @@ test('`.assign()` possibile values should be limited by the `validate` function'
    tssp.assign({ a: '1' })
    // @ts-expect-error illegal property
    tssp.assign({ e: '1' })
+})
+
+test('`toString()` should return `?${string}` if `questionMark: true`', () => {
+   const qs = new TSSearchParams('', { questionMark: true }).toString()
+   expectTypeOf(qs).toEqualTypeOf<`?${string}`>()
+})
+
+test('`toString()` should return `?${string}` if `questionMark: false`', () => {
+   const qs = new TSSearchParams('', { questionMark: false }).toString()
+   expectTypeOf(qs).toEqualTypeOf<string>()
+})
+
+test('`toString()` should return `?${string}` if `questionMark: undefined`', () => {
+   const qs = new TSSearchParams('').toString()
+   expectTypeOf(qs).toEqualTypeOf<string>()
 })

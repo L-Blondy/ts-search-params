@@ -10,12 +10,31 @@ test('`.toString()` should be encoded', () => {
 })
 
 test('`toString()` should use the return value of `validate`', () => {
-   const qs1 = new TSSearchParams('a=b c d', () => ({ a: '1,2,3' })).toString()
+   const qs1 = new TSSearchParams('a=b c d', {
+      validate: () => ({ a: '1,2,3' }),
+   }).toString()
    expect(qs1).toBe('a=%221%2C2%2C3%22')
 })
 
+test('`toString()` should return `?${string}` if `questionMark: true`', () => {
+   const qs = new TSSearchParams('a="b"', { questionMark: true }).toString()
+   expect(decodeURIComponent(qs)).toBe('?a="b"')
+})
+
+test('`toString()` should return `?${string}` if `questionMark: false`', () => {
+   const qs = new TSSearchParams('a="b"', { questionMark: false }).toString()
+   expect(decodeURIComponent(qs)).toBe('a="b"')
+})
+
+test('`toString()` should return `?${string}` if `questionMark: undefined`', () => {
+   const qs = new TSSearchParams('a="b"', { questionMark: false }).toString()
+   expect(decodeURIComponent(qs)).toBe('a="b"')
+})
+
 test('`toObject()` should use the return value of `validate`', () => {
-   const qs1 = new TSSearchParams('a=b c d', () => ({ a: '1,2,3' })).toObject()
+   const qs1 = new TSSearchParams('a=b c d', {
+      validate: () => ({ a: '1,2,3' }),
+   }).toObject()
    expect(qs1).toEqual({ a: '1,2,3' })
 })
 

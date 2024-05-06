@@ -4,13 +4,21 @@ import {
    SerializablePrimitive,
 } from './types'
 
-export class TSSearchParams<T extends SerializableObject> {
+type Options<T extends SerializableObject, Q extends boolean> = {
+   validate?: (searchParamsObject: Record<string, unknown>) => T
+   questionMark?: Q
+}
+
+export class TSSearchParams<
+   T extends SerializableObject,
+   Q extends boolean = false,
+> {
    #value: T
-   #validate: (searchParamsObject: Record<string, unknown>) => T
+   #options: Options<T, Q>
 
    constructor(
       init?: string | URLSearchParams | undefined,
-      validate?: (searchParamsObject: Record<string, unknown>) => T,
+      options: Options<T, Q> = {},
    ) {
       const searchParams =
          !init || typeof init === 'string' ? new URLSearchParams(init) : init
@@ -20,7 +28,12 @@ export class TSSearchParams<T extends SerializableObject> {
          value[key] = parseValue(val) as any
       }
       this.#value = value
-      this.#validate = validate || (() => this.#value)
+      this.#options = options
+      // this.#validate = options.validate || (() => this.#value)
+   }
+
+   #validate() {
+      return (this.#options.validate || (() => this.#value))(this.#value)
    }
 
    assign(partial: Partial<T>) {
@@ -28,22 +41,22 @@ export class TSSearchParams<T extends SerializableObject> {
       return this
    }
 
-   toString() {
-      return Object.entries(this.#validate(this.#value)).reduce(
-         (qs, [_k, _v]) => {
-            // remove undefined at the top level
-            if (_v === undefined) return qs
-            const prefix = qs.length ? '&' : ''
-            const key = encodeURIComponent(_k)
-            const value = encodeValue(_v)
-            return qs + `${prefix}${key}=${value}`
-         },
-         '',
-      )
+   toString(): Q extends true ? `?${string}` : string {
+      const qs = Object.entries(this.#validate()).reduce((qs, [_k, _v]) => {
+         // remove undefined at the top level
+         if (_v === undefined) return qs
+         const prefix = qs.length ? '&' : ''
+         const key = encodeURIComponent(_k)
+         const value = encodeValue(_v)
+         return qs + `${prefix}${key}=${value}`
+      }, '')
+      return (this.#options.questionMark ? `?${qs}` : qs) as Q extends true
+         ? `?${string}`
+         : string
    }
 
    toObject() {
-      return { ...this.#validate(this.#value) }
+      return { ...this.#validate() }
    }
 
    get<K extends keyof T>(key: K): T[K] {
