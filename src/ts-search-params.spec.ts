@@ -9,6 +9,16 @@ test('`.toString()` should be encoded', () => {
    expect(qs2).toBe('a=%22b%20c%20d%22')
 })
 
+test('`toString()` should use the return value of `validate`', () => {
+   const qs1 = new TSSearchParams('a=b c d', () => ({ a: '1,2,3' })).toString()
+   expect(qs1).toBe('a=%221%2C2%2C3%22')
+})
+
+test('`toObject()` should use the return value of `validate`', () => {
+   const qs1 = new TSSearchParams('a=b c d', () => ({ a: '1,2,3' })).toObject()
+   expect(qs1).toEqual({ a: '1,2,3' })
+})
+
 test('`.get()` should be decoded', () => {
    const sp1 = new TSSearchParams('a=b c d')
    const sp2 = new TSSearchParams('a=%22b%20c%20d%22')
@@ -24,8 +34,10 @@ test.each`
    ${{ a: [{ a: 1, b: null, c: undefined, d: '', e: true }] } satisfies SerializableObject}
    ${{ a: encodeURIComponent('["Château Lafite Rothschild"]'), b: '["Château Lafite Rothschild"]' } satisfies SerializableObject}
    ${{ a: encodeURIComponent('{b:"Château Lafite Rothschild"}'), b: '{b:["Château Lafite Rothschild"]}' } satisfies SerializableObject}
-`('the output should be equal to the `input`', ({ input }) => {
+`('`output` should equal `input` (case %#)', ({ input }) => {
    const qs = new TSSearchParams().assign(input).toString()
    const output = new TSSearchParams(qs).toObject()
    expect(input).toEqual(output)
 })
+
+test('`toObject()` should use the return value of `validate`')

@@ -1,4 +1,4 @@
-import { describe, expectTypeOf, test } from 'vitest'
+import { test } from 'vitest'
 import { TSSearchParams } from './ts-search-params'
 
 test('`.assign()` serializable values should be legal', () => {
@@ -9,16 +9,14 @@ test('`.assign()` serializable values should be legal', () => {
       c: undefined,
       d: true,
       e: '',
-      f: Symbol(),
-      g: [1, null, undefined, true, '', Symbol()],
-      h: {
+      f: [1, null, undefined, true, ''],
+      g: {
          a: 1,
          b: null,
          c: undefined,
          d: true,
          e: '',
-         f: Symbol(),
-         g: [1, null, undefined, true, '', Symbol()],
+         f: [1, null, undefined, true, ''],
       },
    })
 })
@@ -36,4 +34,21 @@ test('`.assign()` should allow only <T>', () => {
    tssp.assign({ a: '1' })
    // @ts-expect-error only { a: number } is legal
    tssp.assign({ a: 1, b: '1' })
+})
+
+test('`.assign()` possibile values should be limited by the `validate` function', () => {
+   const tssp = new TSSearchParams('', () => ({
+      a: 1,
+      b: '',
+      c: [1, null],
+      d: [{ a: 1 }],
+   }))
+
+   tssp.assign({ a: 1 })
+   tssp.assign({ c: [null, 5] })
+   tssp.assign({ d: [{ a: 9 }] })
+   // @ts-expect-error expect number
+   tssp.assign({ a: '1' })
+   // @ts-expect-error illegal property
+   tssp.assign({ e: '1' })
 })

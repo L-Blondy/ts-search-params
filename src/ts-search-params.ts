@@ -6,8 +6,12 @@ import {
 
 export class TSSearchParams<T extends SerializableObject> {
    #value: T
+   #validate: (searchParamsObject: Record<string, unknown>) => T
 
-   constructor(init?: string | URLSearchParams | undefined) {
+   constructor(
+      init?: string | URLSearchParams | undefined,
+      validate?: (searchParamsObject: Record<string, unknown>) => T,
+   ) {
       const searchParams =
          !init || typeof init === 'string' ? new URLSearchParams(init) : init
       const value = {} as T
@@ -16,6 +20,7 @@ export class TSSearchParams<T extends SerializableObject> {
          value[key] = parseValue(val) as any
       }
       this.#value = value
+      this.#validate = validate || (() => this.#value)
    }
 
    assign(partial: Partial<T>) {
@@ -24,18 +29,21 @@ export class TSSearchParams<T extends SerializableObject> {
    }
 
    toString() {
-      return Object.entries(this.#value).reduce((qs, [_k, _v]) => {
-         // remove undefined at the top level
-         if (_v === undefined) return qs
-         const prefix = qs.length ? '&' : ''
-         const key = encodeURIComponent(_k)
-         const value = encodeValue(_v)
-         return qs + `${prefix}${key}=${value}`
-      }, '')
+      return Object.entries(this.#validate(this.#value)).reduce(
+         (qs, [_k, _v]) => {
+            // remove undefined at the top level
+            if (_v === undefined) return qs
+            const prefix = qs.length ? '&' : ''
+            const key = encodeURIComponent(_k)
+            const value = encodeValue(_v)
+            return qs + `${prefix}${key}=${value}`
+         },
+         '',
+      )
    }
 
    toObject() {
-      return { ...this.#value }
+      return { ...this.#validate(this.#value) }
    }
 
    get<K extends keyof T>(key: K): T[K] {
