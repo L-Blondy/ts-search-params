@@ -40,4 +40,16 @@ test.each`
    expect(input).toEqual(output)
 })
 
-test('`toObject()` should use the return value of `validate`')
+test('Should work with standard qs', () => {
+   const sp1 = new TSSearchParams(
+      // @ts-expect-error URLSearchParams do not accept numbers
+      new URLSearchParams({
+         a: 'This is a string',
+         b: 2,
+      }).toString(),
+   )
+   expect(sp1.toObject()).toEqual({
+      a: 'This is a string',
+      b: 2,
+   })
+})
