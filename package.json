@@ -1,6 +1,6 @@
 {
    "name": "ts-search-params",
-   "version": "0.0.3",
+   "version": "0.0.4",
    "description": "Type Safe Search Params",
    "type": "module",
    "main": "dist/index.cjs",
