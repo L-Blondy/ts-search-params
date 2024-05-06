@@ -45,7 +45,7 @@ export class TSSearchParams<T extends SerializableObject> {
 
 function parseValue(val: string) {
    if (isSurroundedBy(val, '{', '}') || isSurroundedBy(val, '[', ']')) {
-      return decodePrimitivesRecursively(JSON.parse(val))
+      return revivePrimitivesRecursively(JSON.parse(val))
    }
    if (isSurroundedBy(val, '"')) {
       return val.slice(1, -1)
@@ -68,7 +68,7 @@ function parseValue(val: string) {
 function encodeValue(val: any) {
    if (isObject(val)) {
       return encodeURIComponent(
-         JSON.stringify(encodePrimitivesRecursively(val)),
+         JSON.stringify(serializePrimitivesRecursively(val)),
       )
    }
    // top level empty string values result in `value=` as they go through this case
@@ -106,7 +106,7 @@ function traverse(
    return objOrArr
 }
 
-function encodePrimitivesRecursively(
+function serializePrimitivesRecursively(
    objectOrArray: SerializableObject | SerializableArray,
 ) {
    const copy = structuredClone(objectOrArray)
@@ -115,17 +115,17 @@ function encodePrimitivesRecursively(
          return
       }
       if (typeof value === 'string') {
-         // @ts-expect-error ts fails to assign key, even using any
+         // @ts-expect-error ts fails to assign key, even when using any
          obj[key] = `"${value}"`
       } else {
-         // @ts-expect-error ts fails to assign key, even using any
+         // @ts-expect-error ts fails to assign key, even when using any
          obj[key] = String(value)
       }
    })
    return copy
 }
 
-function decodePrimitivesRecursively(
+function revivePrimitivesRecursively(
    objectOrArray: SerializableObject | SerializableArray,
 ) {
    traverse(objectOrArray, (obj, key, value) => {
