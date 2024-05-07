@@ -14,7 +14,7 @@ export class TSSearchParams<
    Q extends boolean = false,
 > {
    #value: T
-   #options: Options<T, Q>
+   #options: Required<Options<T, Q>>
 
    constructor(
       init?: string | URLSearchParams | undefined,
@@ -28,11 +28,14 @@ export class TSSearchParams<
          value[key] = parseValue(val) as any
       }
       this.#value = value
-      this.#options = options
+      this.#options = {
+        validate: options.validate || (() => this.#value), 
+        questionMark: options.questionMark || false, 
+      } 
    }
 
    #validated() {
-      return structuredClone((this.#options.validate || (() => this.#value))(this.#value)) 
+      return this.#options.validate(this.#value)
    }
 
    assign(partial: Partial<T>) {
