@@ -29,7 +29,6 @@ export class TSSearchParams<
       }
       this.#value = value
       this.#options = options
-      // this.#validate = options.validate || (() => this.#value)
    }
 
    #validate() {
@@ -138,6 +137,9 @@ function serializePrimitivesRecursively(
       if (typeof value === 'string') {
          // @ts-expect-error ts fails to assign key, even when using any
          obj[key] = `"${value}"`
+         // remove undefined from objects
+      } else if (typeof value === 'undefined' && !Array.isArray(obj)) {
+         delete obj[key]
       } else {
          // @ts-expect-error ts fails to assign key, even when using any
          obj[key] = String(value)

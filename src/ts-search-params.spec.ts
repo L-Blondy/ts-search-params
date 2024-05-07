@@ -31,6 +31,26 @@ test('`toString()` should return `?${string}` if `questionMark: undefined`', () 
    expect(decodeURIComponent(qs)).toBe('a="b"')
 })
 
+test('`toString()` should NOT include `undefined` values in objects', () => {
+   const qs1 = new TSSearchParams()
+      .assign({
+         filters: { search: 'query', limit: undefined },
+      })
+      .toString()
+   expect(decodeURIComponent(qs1)).toBe('filters={"search":"\\"query\\""}')
+})
+
+test('`toString()` should include `undefined` values in arrays', () => {
+   const qs = new TSSearchParams()
+      .assign({
+         filters: ['a', undefined, 'z'],
+      })
+      .toString()
+   expect(decodeURIComponent(qs)).toBe(
+      'filters=["\\"a\\"","undefined","\\"z\\""]',
+   )
+})
+
 test('`toObject()` should use the return value of `validate`', () => {
    const qs1 = new TSSearchParams('a=b c d', {
       validate: () => ({ a: '1,2,3' }),
