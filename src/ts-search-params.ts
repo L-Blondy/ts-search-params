@@ -31,8 +31,8 @@ export class TSSearchParams<
       this.#options = options
    }
 
-   #validate() {
-      return (this.#options.validate || (() => this.#value))(this.#value)
+   #validated() {
+      return structuredClone((this.#options.validate || (() => this.#value))(this.#value)) 
    }
 
    assign(partial: Partial<T>) {
@@ -41,7 +41,7 @@ export class TSSearchParams<
    }
 
    toString(): Q extends true ? `?${string}` : string {
-      const qs = Object.entries(this.#validate()).reduce((qs, [_k, _v]) => {
+      const qs = Object.entries(this.#validated()).reduce((qs, [_k, _v]) => {
          // remove undefined at the top level
          if (_v === undefined) return qs
          const prefix = qs.length ? '&' : ''
@@ -55,11 +55,11 @@ export class TSSearchParams<
    }
 
    toObject() {
-      return { ...this.#validate() }
+      return this.#validated()
    }
 
    get<K extends keyof T>(key: K): T[K] {
-      return this.#value[key]
+      return this.#validated()[key]
    }
 }
 
