@@ -29,9 +29,9 @@ export class TSSearchParams<
       }
       this.#value = value
       this.#options = {
-        validate: options.validate || (() => this.#value), 
-        questionMark: options.questionMark || false, 
-      } 
+         validate: options.validate || (() => this.#value),
+         questionMark: options.questionMark || (false as Q),
+      }
    }
 
    #validated() {
@@ -89,7 +89,7 @@ function parseValue(val: string) {
 }
 
 function encodeValue(val: any) {
-   if (isObject(val)) {
+   if (isObjectOrArray(val)) {
       return encodeURIComponent(
          JSON.stringify(serializePrimitivesRecursively(val)),
       )
@@ -105,7 +105,9 @@ function isSurroundedBy(str: string, start: string, end: string = start) {
    return str.startsWith(start) && str.endsWith(end)
 }
 
-function isObject(val: any) {
+function isObjectOrArray(
+   val: any,
+): val is SerializableArray | SerializableObject {
    return typeof val === 'object' && val !== null
 }
 
@@ -122,7 +124,7 @@ function traverse(
 ) {
    Object.entries(objOrArr).forEach(([key, val]) => {
       fn(objOrArr, key, val)
-      if (val !== null && typeof val === 'object') {
+      if (isObjectOrArray(val)) {
          traverse(val, fn)
       }
    })

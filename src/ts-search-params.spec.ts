@@ -79,6 +79,19 @@ test.each`
    expect(input).toEqual(output)
 })
 
+test.only.each`
+   startWith                                                                                                            | assign                    | output
+   ${{ a: 'bcd', x: 'xyz' } satisfies SerializableObject}                                                               | ${{ x: 'ooo' }}           | ${{ a: 'bcd', x: 'ooo' }}
+   ${{ a: [{ b: '1', c: 1 }, { b: '2', c: 2 }], x: [{ y: '1', z: 1 }, { y: '2', z: 2 }] } satisfies SerializableObject} | ${{ x: [] }}              | ${{ a: [{ b: '1', c: 1 }, { b: '2', c: 2 }], x: [] }}
+   ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abc' } satisfies SerializableObject}                           | ${{ search: 'abcde' }}    | ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abcde' }}
+   ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abc' } satisfies SerializableObject}                           | ${{ filters: undefined }} | ${{ search: 'abc' }}
+   ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abc' } satisfies SerializableObject}                           | ${{ search: undefined }}  | ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] } }}
+`('`Shallow merge (case %#)', ({ startWith, assign, output }) => {
+   const qs = new TSSearchParams().assign(startWith).toString()
+   const object = new TSSearchParams(qs).assign(assign).toObject()
+   expect(object).toEqual(output)
+})
+
 test('Should work with standard qs', () => {
    const sp1 = new TSSearchParams(
       // @ts-expect-error URLSearchParams do not accept numbers
