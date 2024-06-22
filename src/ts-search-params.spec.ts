@@ -68,9 +68,10 @@ test('`.get()` should be decoded', () => {
 test.each`
    input
    ${{}}
-   ${{ a: 1, b: null, c: undefined, d: '', e: true } satisfies SerializableObject}
+   ${{ a: 1, b: null, c: undefined, d: '', e: true, f: NaN } satisfies SerializableObject}
    ${{ a: [1, null, undefined, '', true] } satisfies SerializableObject}
    ${{ a: [{ a: 1, b: null, c: undefined, d: '', e: true }] } satisfies SerializableObject}
+   ${{ a: [null, undefined, 1, true, false, 'string'] } satisfies SerializableObject}
    ${{ a: encodeURIComponent('["Château Lafite Rothschild"]'), b: '["Château Lafite Rothschild"]' } satisfies SerializableObject}
    ${{ a: encodeURIComponent('{b:"Château Lafite Rothschild"}'), b: '{b:["Château Lafite Rothschild"]}' } satisfies SerializableObject}
 `('`output` should equal `input` (case %#)', ({ input }) => {
@@ -79,7 +80,7 @@ test.each`
    expect(input).toEqual(output)
 })
 
-test.only.each`
+test.each`
    startWith                                                                                                            | assign                    | output
    ${{ a: 'bcd', x: 'xyz' } satisfies SerializableObject}                                                               | ${{ x: 'ooo' }}           | ${{ a: 'bcd', x: 'ooo' }}
    ${{ a: [{ b: '1', c: 1 }, { b: '2', c: 2 }], x: [{ y: '1', z: 1 }, { y: '2', z: 2 }] } satisfies SerializableObject} | ${{ x: [] }}              | ${{ a: [{ b: '1', c: 1 }, { b: '2', c: 2 }], x: [] }}

@@ -1,8 +1,4 @@
-import {
-   SerializableArray,
-   SerializableObject,
-   SerializablePrimitive,
-} from './types'
+import { SerializableArray, SerializableObject } from './types'
 
 type Options<T extends SerializableObject, Q extends boolean> = {
    validate?: (searchParamsObject: Record<string, unknown>) => T
@@ -25,7 +21,7 @@ export class TSSearchParams<
       const value = {} as T
       for (let [_k, val] of searchParams.entries()) {
          const key: keyof T = _k
-         value[key] = parseValue(val) as any
+         value[key] = deserialize(val) as any
       }
       this.#value = value
       this.#options = {
@@ -49,7 +45,7 @@ export class TSSearchParams<
          if (_v === undefined) return qs
          const prefix = qs.length ? '&' : ''
          const key = encodeURIComponent(_k)
-         const value = encodeValue(_v)
+         const value = serialize(_v)
          return qs + `${prefix}${key}=${value}`
       }, '')
       return (this.#options.questionMark ? `?${qs}` : qs) as Q extends true
@@ -66,9 +62,11 @@ export class TSSearchParams<
    }
 }
 
-function parseValue(val: string) {
+function deserialize(val: string): any {
    if (isSurroundedBy(val, '{', '}') || isSurroundedBy(val, '[', ']')) {
-      return revivePrimitivesRecursively(JSON.parse(val))
+      return JSON.parse(val, (key, val) => {
+         return typeof val === 'string' ? deserialize(val) : val
+      })
    }
    if (isSurroundedBy(val, '"')) {
       return val.slice(1, -1)
@@ -79,6 +77,9 @@ function parseValue(val: string) {
    if (val === 'null') {
       return null
    }
+   if (val === 'NaN') {
+      return NaN
+   }
    if (val === 'undefined') {
       return undefined
    }
@@ -88,10 +89,24 @@ function parseValue(val: string) {
    return val
 }
 
-function encodeValue(val: any) {
+function serialize(val: any) {
    if (isObjectOrArray(val)) {
+      let scope: any
       return encodeURIComponent(
-         JSON.stringify(serializePrimitivesRecursively(val)),
+         JSON.stringify(val, (key, value) => {
+            if (value !== null && typeof value === 'object') {
+               scope = value
+               return value
+            }
+            if (typeof value === 'string') {
+               return `"${value}"`
+               // remove undefined from objects
+            } else if (typeof value === 'undefined' && !Array.isArray(scope)) {
+               return undefined
+            } else {
+               return String(value)
+            }
+         }),
       )
    }
    // top level empty string values result in `value=` as they go through this case
@@ -109,58 +124,4 @@ function isObjectOrArray(
    val: any,
 ): val is SerializableArray | SerializableObject {
    return typeof val === 'object' && val !== null
-}
-
-/**
- * Mutate the object for better perf
- */
-function traverse(
-   objOrArr: SerializableObject | SerializableArray,
-   fn: (
-      obj: SerializableObject | SerializableArray,
-      prop: string,
-      value: SerializablePrimitive | SerializableArray | SerializableObject,
-   ) => void,
-) {
-   Object.entries(objOrArr).forEach(([key, val]) => {
-      fn(objOrArr, key, val)
-      if (isObjectOrArray(val)) {
-         traverse(val, fn)
-      }
-   })
-   return objOrArr
-}
-
-function serializePrimitivesRecursively(
-   objectOrArray: SerializableObject | SerializableArray,
-) {
-   const copy = structuredClone(objectOrArray)
-   traverse(copy, (obj, key, value) => {
-      if (value !== null && typeof value === 'object') {
-         return
-      }
-      if (typeof value === 'string') {
-         // @ts-expect-error ts fails to assign key, even when using any
-         obj[key] = `"${value}"`
-         // remove undefined from objects
-      } else if (typeof value === 'undefined' && !Array.isArray(obj)) {
-         delete obj[key]
-      } else {
-         // @ts-expect-error ts fails to assign key, even when using any
-         obj[key] = String(value)
-      }
-   })
-   return copy
-}
-
-function revivePrimitivesRecursively(
-   objectOrArray: SerializableObject | SerializableArray,
-) {
-   traverse(objectOrArray, (obj, key, value) => {
-      if (typeof value === 'string') {
-         // @ts-expect-error ts fails to assign key, even using any
-         obj[key] = parseValue(value)
-      }
-   })
-   return objectOrArray
 }
