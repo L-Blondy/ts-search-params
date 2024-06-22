@@ -20,8 +20,7 @@ export class TSSearchParams<
          !init || typeof init === 'string' ? new URLSearchParams(init) : init
       const value = {} as T
       for (let [_k, val] of searchParams.entries()) {
-         const key: keyof T = _k
-         value[key] = deserialize(val) as any
+         value[_k as keyof T] = deserialize(val) as any
       }
       this.#value = value
       this.#options = {
@@ -64,7 +63,7 @@ export class TSSearchParams<
 
 function deserialize(val: string): any {
    if (isSurroundedBy(val, '{', '}') || isSurroundedBy(val, '[', ']')) {
-      return JSON.parse(val, (key, val) => {
+      return JSON.parse(val, (_, val) => {
          return typeof val === 'string' ? deserialize(val) : val
       })
    }
@@ -93,8 +92,8 @@ function serialize(val: any) {
    if (isObjectOrArray(val)) {
       let scope: any
       return encodeURIComponent(
-         JSON.stringify(val, (key, value) => {
-            if (value !== null && typeof value === 'object') {
+         JSON.stringify(val, (_, value) => {
+            if (isObjectOrArray(value)) {
                scope = value
                return value
             }
