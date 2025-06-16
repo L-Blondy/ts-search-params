@@ -1,12 +1,10 @@
-import { SerializableArray, SerializableObject } from './types'
-
-type Options<T extends SerializableObject, Q extends boolean> = {
+type Options<T extends Record<string, unknown>, Q extends boolean> = {
    validate?: (searchParamsObject: Record<string, unknown>) => T
    questionMark?: Q
 }
 
 export class TSSearchParams<
-   T extends SerializableObject,
+   T extends Record<string, unknown>,
    Q extends boolean = false,
 > {
    #value: T
@@ -119,8 +117,6 @@ function isSurroundedBy(str: string, start: string, end: string = start) {
    return str.startsWith(start) && str.endsWith(end)
 }
 
-function isObjectOrArray(
-   val: any,
-): val is SerializableArray | SerializableObject {
+function isObjectOrArray(val: any): val is Record<string, unknown> | unknown[] {
    return typeof val === 'object' && val !== null
 }

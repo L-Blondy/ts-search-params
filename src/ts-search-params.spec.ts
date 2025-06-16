@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest'
 import { TSSearchParams } from './ts-search-params'
-import { SerializableObject } from './types'
 
 test('`.toString()` should be encoded', () => {
    const qs1 = new TSSearchParams('a=b c d').toString()
@@ -68,12 +67,12 @@ test('`.get()` should be decoded', () => {
 test.each`
    input
    ${{}}
-   ${{ a: 1, b: null, c: undefined, d: '', e: true, f: NaN } satisfies SerializableObject}
-   ${{ a: [1, null, undefined, '', true] } satisfies SerializableObject}
-   ${{ a: [{ a: 1, b: null, c: undefined, d: '', e: true }] } satisfies SerializableObject}
-   ${{ a: [null, undefined, 1, true, false, 'string'] } satisfies SerializableObject}
-   ${{ a: encodeURIComponent('["Château Lafite Rothschild"]'), b: '["Château Lafite Rothschild"]' } satisfies SerializableObject}
-   ${{ a: encodeURIComponent('{b:"Château Lafite Rothschild"}'), b: '{b:["Château Lafite Rothschild"]}' } satisfies SerializableObject}
+   ${{ a: 1, b: null, c: undefined, d: '', e: true, f: NaN }}
+   ${{ a: [1, null, undefined, '', true] }}
+   ${{ a: [{ a: 1, b: null, c: undefined, d: '', e: true }] }}
+   ${{ a: [null, undefined, 1, true, false, 'string'] }}
+   ${{ a: encodeURIComponent('["Château Lafite Rothschild"]'), b: '["Château Lafite Rothschild"]' }}
+   ${{ a: encodeURIComponent('{b:"Château Lafite Rothschild"}'), b: '{b:["Château Lafite Rothschild"]}' }}
 `('`output` should equal `input` (case %#)', ({ input }) => {
    const qs = new TSSearchParams().assign(input).toString()
    const output = new TSSearchParams(qs).toObject()
@@ -81,12 +80,12 @@ test.each`
 })
 
 test.each`
-   startWith                                                                                                            | assign                    | output
-   ${{ a: 'bcd', x: 'xyz' } satisfies SerializableObject}                                                               | ${{ x: 'ooo' }}           | ${{ a: 'bcd', x: 'ooo' }}
-   ${{ a: [{ b: '1', c: 1 }, { b: '2', c: 2 }], x: [{ y: '1', z: 1 }, { y: '2', z: 2 }] } satisfies SerializableObject} | ${{ x: [] }}              | ${{ a: [{ b: '1', c: 1 }, { b: '2', c: 2 }], x: [] }}
-   ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abc' } satisfies SerializableObject}                           | ${{ search: 'abcde' }}    | ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abcde' }}
-   ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abc' } satisfies SerializableObject}                           | ${{ filters: undefined }} | ${{ search: 'abc' }}
-   ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abc' } satisfies SerializableObject}                           | ${{ search: undefined }}  | ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] } }}
+   startWith                                                                               | assign                    | output
+   ${{ a: 'bcd', x: 'xyz' }}                                                               | ${{ x: 'ooo' }}           | ${{ a: 'bcd', x: 'ooo' }}
+   ${{ a: [{ b: '1', c: 1 }, { b: '2', c: 2 }], x: [{ y: '1', z: 1 }, { y: '2', z: 2 }] }} | ${{ x: [] }}              | ${{ a: [{ b: '1', c: 1 }, { b: '2', c: 2 }], x: [] }}
+   ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abc' }}                           | ${{ search: 'abcde' }}    | ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abcde' }}
+   ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abc' }}                           | ${{ filters: undefined }} | ${{ search: 'abc' }}
+   ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] }, search: 'abc' }}                           | ${{ search: undefined }}  | ${{ filters: { a: [1, 2, 3], b: [4, 5, 6] } }}
 `('`Shallow merge (case %#)', ({ startWith, assign, output }) => {
    const qs = new TSSearchParams().assign(startWith).toString()
    const object = new TSSearchParams(qs).assign(assign).toObject()

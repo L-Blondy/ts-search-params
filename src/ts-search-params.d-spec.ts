@@ -22,12 +22,6 @@ test('`.assign()` serializable values should be legal', () => {
    })
 })
 
-test('`.assign()` non serializable values should be illegal', () => {
-   const tssp = new TSSearchParams()
-   // @ts-expect-error Date is not serializable in a revivable way
-   tssp.assign({ a: new Date() })
-})
-
 test('`.assign()` should allow only <T>', () => {
    const tssp = new TSSearchParams<{ a: number }>()
    tssp.assign({ a: 1 })
